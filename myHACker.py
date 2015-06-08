@@ -5,15 +5,15 @@ from bs4 import BeautifulSoup
 class HAC:
 
 	login_url = ("https://hac.westport.k12.ct.us/"
-				 "HomeAccess/Account/LogOn?ReturnUrl=%2fhomeaccess")
+			"HomeAccess/Account/LogOn?ReturnUrl=%2fhomeaccess")
 
 	data_url = ("https://hac.westport.k12.ct.us/"
-				"HomeAccess/Content/Student/Assignments.aspx")
+			"HomeAccess/Content/Student/Assignments.aspx")
 
 	grade_weight = { "F": 0.0, "D": 1.0, "C": 2.0, "B": 3.0, "A": 4.0 }
 
 	modifier_weight = { "-": -1/3.0, "+": 1/3.0, " ": 0,
-						"B": -1/3.0, "A": 0, "H": 1/3.0, "P": 2/3.0 }
+				"B": -1/3.0, "A": 0, "H": 1/3.0, "P": 2/3.0 }
 
 	def __init__(self, username, password):
 		self.username = username
@@ -91,7 +91,7 @@ class HAC:
 	def display_gpa(self):
 		"""Display the gpa calculated by _gpa, both weighted and not."""
 		if self.student_data:
-			uw_gpa, w_gpa = self._gpa()
+			w_gpa, uw_gpa = self._gpa()
 			print("Weighted GPA: " + str(w_gpa))
 			print("Unweighted GPA: " + str(uw_gpa))
 		else:
@@ -101,19 +101,19 @@ class HAC:
 		"""Calculate the weighted and not GPA and return both in a tuple."""
 		weighted_total = 0
 		unweighted_total = 0
-		count = 0
+		w_count = 0
 		for data in self.student_data:
-			letter_grade = self._letter_grade(data["average"])
+			letter_grade = self._letter_grade(float(data["average"]))
 			if data["level"] != "E":  #E is not an academic class
 				weighted_total += (self.grade_weight[letter_grade[0]] 
 						+ self.modifier_weight[letter_grade[1]]
 						+ self.modifier_weight[data["level"]])
+                                w_count += 1
 
 			unweighted_total += (self.grade_weight[letter_grade[0]]
 					+ self.modifier_weight[letter_grade[1]])
-			count += 1
 
-		return (weighted_total / count, unweighted_total / count)
+		return (weighted_total / w_count, unweighted_total / len(self.student_data))
 
 	def _letter_grade(self, average):
 		"""Take the average and return the corresponding letter grade."""
